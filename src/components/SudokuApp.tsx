@@ -503,19 +503,19 @@ export default function SudokuApp() {
           <div className="title-row">
             <div className="title-main">
               <NextImage src="/logo.png" alt="SudokuPaste logo" width={72} height={72} className="app-logo" />
-              <button
-                type="button"
-                className="theme-mobile-button"
-                onClick={cycleTheme}
-                aria-label={`Theme: ${themePreference}. Tap to change theme mode.`}
-              >
-                <ThemeIcon size={18} aria-hidden />
-              </button>
               <div className="title-text">
                 <h1>SudokuPaste</h1>
                 <span className="title-chip">Recognize + Play</span>
               </div>
             </div>
+            <button
+              type="button"
+              className="theme-mobile-button"
+              onClick={cycleTheme}
+              aria-label={`Theme: ${themePreference}. Tap to change theme mode.`}
+            >
+              <ThemeIcon size={18} aria-hidden />
+            </button>
             <div className="theme-toggle" role="group" aria-label="Theme">
               <button
                 type="button"
