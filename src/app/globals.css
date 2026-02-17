@@ -215,6 +215,12 @@ body {
   cursor: pointer;
 }
 
+.key-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
 .key:hover {
   filter: brightness(0.98);
 }

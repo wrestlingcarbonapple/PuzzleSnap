@@ -1,6 +1,7 @@
 "use client";
 
 import NextImage from "next/image";
+import { Check, Eraser, PenLine, RotateCcw, Undo2, Upload } from "lucide-react";
 import { ChangeEvent, DragEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   bitForDigit,
@@ -536,10 +537,16 @@ export default function SudokuApp() {
 
           <div className="action-row">
             <button type="button" className={`key ${noteMode ? "key-note-on" : ""}`} onClick={() => setNoteMode((prev) => !prev)}>
-              Note {noteMode ? "ON" : "OFF"}
+              <span className="key-content">
+                <PenLine size={16} aria-hidden />
+                Note {noteMode ? "ON" : "OFF"}
+              </span>
             </button>
             <button type="button" className="key" onClick={() => applyDigit(null)}>
-              Delete
+              <span className="key-content">
+                <Eraser size={16} aria-hidden />
+                Delete
+              </span>
             </button>
             <button
               type="button"
@@ -553,7 +560,10 @@ export default function SudokuApp() {
                 }
               }}
             >
-              Undo
+              <span className="key-content">
+                <Undo2 size={16} aria-hidden />
+                Undo
+              </span>
             </button>
             <button
               type="button"
@@ -571,7 +581,10 @@ export default function SudokuApp() {
                 });
               }}
             >
-              Reset
+              <span className="key-content">
+                <RotateCcw size={16} aria-hidden />
+                Reset
+              </span>
             </button>
           </div>
         </section>
@@ -589,7 +602,10 @@ export default function SudokuApp() {
           <p>Drop an image here or paste one with Ctrl+V / Cmd+V.</p>
           <div className="import-actions">
             <button type="button" className="key" onClick={() => fileInputRef.current?.click()} disabled={ocrBusy}>
-              Choose Image
+              <span className="key-content">
+                <Upload size={16} aria-hidden />
+                Choose Image
+              </span>
             </button>
             {recognizedValues && (
               <button
@@ -598,7 +614,10 @@ export default function SudokuApp() {
                 onClick={() => applyRecognizedPuzzle(recognizedValues)}
                 disabled={ocrBusy}
               >
-                Use OCR Puzzle
+                <span className="key-content">
+                  <Check size={16} aria-hidden />
+                  Use OCR Puzzle
+                </span>
               </button>
             )}
           </div>
