@@ -1,7 +1,7 @@
 "use client";
 
 import NextImage from "next/image";
-import { Check, Eraser, PenLine, RotateCcw, Undo2, Upload } from "lucide-react";
+import { Check, Eraser, Monitor, Moon, PenLine, RotateCcw, Sun, Undo2, Upload } from "lucide-react";
 import { ChangeEvent, DragEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   bitForDigit,
@@ -21,7 +21,10 @@ type Snapshot = {
   notes: number[];
 };
 
+type ThemePreference = "light" | "dark" | "system";
+
 const STORAGE_KEY = "sudokupaste.game.v1";
+const THEME_STORAGE_KEY = "sudokupaste.theme.v1";
 const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 function cloneSnapshot(snapshot: Snapshot): Snapshot {
@@ -139,6 +142,7 @@ export default function SudokuApp() {
   const [notes, setNotes] = useState<number[]>(() => createEmptyNotes());
   const [selected, setSelected] = useState<number | null>(0);
   const [noteMode, setNoteMode] = useState(false);
+  const [themePreference, setThemePreference] = useState<ThemePreference>("system");
 
   const [history, setHistory] = useState<Snapshot[]>(() => [
     {
@@ -201,6 +205,13 @@ export default function SudokuApp() {
   }, []);
 
   useEffect(() => {
+    const raw = window.localStorage.getItem(THEME_STORAGE_KEY);
+    if (raw === "light" || raw === "dark" || raw === "system") {
+      setThemePreference(raw);
+    }
+  }, []);
+
+  useEffect(() => {
     const payload = {
       startValues,
       values,
@@ -209,6 +220,26 @@ export default function SudokuApp() {
     };
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   }, [noteMode, notes, startValues, values]);
+
+  useEffect(() => {
+    window.localStorage.setItem(THEME_STORAGE_KEY, themePreference);
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const applyTheme = () => {
+      const resolvedTheme =
+        themePreference === "system" ? (media.matches ? "dark" : "light") : themePreference;
+      document.documentElement.dataset.theme = resolvedTheme;
+    };
+    applyTheme();
+
+    if (themePreference !== "system") {
+      return;
+    }
+
+    media.addEventListener("change", applyTheme);
+    return () => {
+      media.removeEventListener("change", applyTheme);
+    };
+  }, [themePreference]);
 
   const completed = useMemo(() => computeCompletedDigits(values), [values]);
   const conflictMask = useMemo(() => computeConflictMask(values), [values]);
@@ -457,10 +488,38 @@ export default function SudokuApp() {
       <main className="card">
         <div className="title-block">
           <div className="title-row">
-            <NextImage src="/logo.png" alt="SudokuPaste logo" width={72} height={72} className="app-logo" />
-            <div className="title-text">
-              <h1>SudokuPaste</h1>
-              <span className="title-chip">Recognize + Play</span>
+            <div className="title-main">
+              <NextImage src="/logo.png" alt="SudokuPaste logo" width={72} height={72} className="app-logo" />
+              <div className="title-text">
+                <h1>SudokuPaste</h1>
+                <span className="title-chip">Recognize + Play</span>
+              </div>
+            </div>
+            <div className="theme-toggle" role="group" aria-label="Theme">
+              <button
+                type="button"
+                className={`theme-button ${themePreference === "light" ? "theme-button-active" : ""}`}
+                onClick={() => setThemePreference("light")}
+              >
+                <Sun size={15} aria-hidden />
+                Light
+              </button>
+              <button
+                type="button"
+                className={`theme-button ${themePreference === "dark" ? "theme-button-active" : ""}`}
+                onClick={() => setThemePreference("dark")}
+              >
+                <Moon size={15} aria-hidden />
+                Dark
+              </button>
+              <button
+                type="button"
+                className={`theme-button ${themePreference === "system" ? "theme-button-active" : ""}`}
+                onClick={() => setThemePreference("system")}
+              >
+                <Monitor size={15} aria-hidden />
+                System
+              </button>
             </div>
           </div>
           <p>Type, note, undo, and recognize puzzles directly from images.</p>
