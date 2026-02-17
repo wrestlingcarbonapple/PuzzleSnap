@@ -19,6 +19,7 @@ type Snapshot = {
   notes: number[];
 };
 
+const STORAGE_KEY = "sudokupaste.game.v1";
 const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 function cloneSnapshot(snapshot: Snapshot): Snapshot {
@@ -154,6 +155,58 @@ export default function SudokuApp() {
   const [ocrError, setOcrError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as {
+        startValues?: Array<number | null>;
+        values?: Array<number | null>;
+        notes?: Array<number>;
+        noteMode?: boolean;
+      };
+
+      if (!parsed.startValues || !parsed.values || !parsed.notes) {
+        return;
+      }
+      if (parsed.startValues.length !== 81 || parsed.values.length !== 81 || parsed.notes.length !== 81) {
+        return;
+      }
+
+      const restoredStart = parsed.startValues.map((value) =>
+        value !== null && value >= 1 && value <= 9 ? value : null
+      );
+      const restoredValues = parsed.values.map((value) =>
+        value !== null && value >= 1 && value <= 9 ? value : null
+      );
+      const restoredNotes = parsed.notes.map((value) => (Number.isInteger(value) ? value : 0));
+
+      setStartValues(restoredStart);
+      setValues(restoredValues);
+      setNotes(restoredNotes);
+      setNoteMode(Boolean(parsed.noteMode));
+      const snapshot = { values: [...restoredValues], notes: [...restoredNotes] };
+      setHistory([snapshot]);
+      setHistoryIndex(0);
+      setSelected(0);
+    } catch {
+      window.localStorage.removeItem(STORAGE_KEY);
+    }
+  }, []);
+
+  useEffect(() => {
+    const payload = {
+      startValues,
+      values,
+      notes,
+      noteMode
+    };
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  }, [noteMode, notes, startValues, values]);
 
   const completed = useMemo(() => computeCompletedDigits(values), [values]);
 
