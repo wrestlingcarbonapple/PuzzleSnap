@@ -1,22 +1,23 @@
 :root {
-  --bg: radial-gradient(circle at 20% 15%, #f7ecd5, transparent 35%),
-    radial-gradient(circle at 80% 0%, #dce6f2, transparent 32%),
-    linear-gradient(145deg, #f4f5ef, #f8fbff);
-  --card: #ffffffee;
-  --text: #162430;
-  --muted: #637889;
+  --bg: radial-gradient(circle at 5% 5%, #ffe6da 0%, transparent 30%),
+    radial-gradient(circle at 95% 12%, #d9f0ff 0%, transparent 28%),
+    radial-gradient(circle at 80% 90%, #e6ffe6 0%, transparent 22%),
+    linear-gradient(160deg, #f6fbff, #fff8ee);
+  --card: #fffffff0;
+  --text: #1d2430;
+  --muted: #5d6b7b;
   --board-bg: #fff;
-  --line: #3e4f5c;
-  --subline: #cad3dc;
-  --selected: #89b6ff;
-  --selected-unit: #edf4ff;
-  --same-number: #cde0ff;
-  --blocked: #eef0f3;
-  --given: #0f2334;
-  --button: #e8f0ff;
-  --button-text: #10253a;
-  --button-active: #99c2ff;
-  --button-muted: #cdd8e6;
+  --line: #4b5f72;
+  --subline: #d2dbe4;
+  --selected: #59a4ff;
+  --selected-unit: #ebf5ff;
+  --same-number: #dcecff;
+  --blocked: #f1f4f6;
+  --given: #16344f;
+  --button: #eef8ff;
+  --button-text: #12314f;
+  --button-active: #8dd6d0;
+  --button-muted: #dbe4ec;
   --danger: #c1434b;
 }
 
@@ -32,7 +33,7 @@ body {
 }
 
 body {
-  font-family: "Work Sans", "Segoe UI", sans-serif;
+  font-family: "Avenir Next", "Nunito Sans", "Trebuchet MS", "Segoe UI", sans-serif;
   color: var(--text);
   background: var(--bg);
 }
@@ -46,11 +47,12 @@ body {
 
 .card {
   width: min(1080px, 100%);
-  border: 1px solid #dde5ee;
-  border-radius: 22px;
+  border: 1px solid #d8e2ec;
+  border-radius: 24px;
   background: var(--card);
-  box-shadow: 0 30px 100px #1f35510f;
-  padding: 20px;
+  box-shadow: 0 26px 80px #10254412;
+  backdrop-filter: blur(6px);
+  padding: 22px;
   display: grid;
   grid-template-columns: minmax(280px, 560px) minmax(230px, 1fr);
   gap: 18px;
@@ -69,10 +71,7 @@ body {
 .app-logo {
   width: 72px;
   height: 72px;
-  border-radius: 18px;
-  border: 1px solid #d1dcea;
-  background: #fff;
-  box-shadow: 0 16px 30px #2755921a;
+  border-radius: 0;
 }
 
 .title-text {
@@ -87,9 +86,9 @@ body {
   align-items: center;
   padding: 3px 10px;
   border-radius: 999px;
-  background: #e9f2ff;
-  border: 1px solid #b9d0f2;
-  color: #22456a;
+  background: #e9fff9;
+  border: 1px solid #95d6c4;
+  color: #1a6659;
   font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -100,6 +99,7 @@ body {
   margin: 0;
   font-size: clamp(2rem, 4vw, 2.6rem);
   letter-spacing: -0.03em;
+  font-family: "Gill Sans", "Avenir Next Condensed", "Trebuchet MS", sans-serif;
 }
 
 .title-block p {
@@ -119,7 +119,10 @@ body {
   grid-template-columns: repeat(9, 1fr);
   grid-template-rows: repeat(9, 1fr);
   border: 2px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
   background: var(--board-bg);
+  box-shadow: 0 14px 36px #0e2a4a12;
 }
 
 .cell {
@@ -129,6 +132,7 @@ body {
   color: var(--text);
   padding: 0;
   cursor: pointer;
+  transition: background-color 120ms ease;
 }
 
 .cell-box-right {
@@ -163,6 +167,7 @@ body {
 
 .cell-invalid .cell-value {
   color: #c63c3c;
+  font-weight: 700;
 }
 
 .cell-value {
@@ -205,14 +210,15 @@ body {
 }
 
 .key {
-  border: 1px solid #bed1ea;
+  border: 1px solid #c3d8ea;
   background: var(--button);
   color: var(--button-text);
-  border-radius: 11px;
-  padding: 11px;
+  border-radius: 13px;
+  padding: 11px 12px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  transition: transform 100ms ease, box-shadow 120ms ease, filter 120ms ease;
 }
 
 .key-content {
@@ -222,7 +228,9 @@ body {
 }
 
 .key:hover {
-  filter: brightness(0.98);
+  filter: brightness(1.01);
+  box-shadow: 0 10px 16px #16477817;
+  transform: translateY(-1px);
 }
 
 .key:disabled {
@@ -232,6 +240,7 @@ body {
 
 .key-note-on {
   background: var(--button-active);
+  border-color: #71c9bf;
 }
 
 .key-muted {
@@ -241,18 +250,18 @@ body {
 
 .import-zone {
   grid-column: 2;
-  border: 2px dashed #b8c9dd;
+  border: 2px dashed #aec5d7;
   border-radius: 16px;
-  padding: 14px;
+  padding: 15px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background: #fbfdff;
+  background: #fdfeff;
 }
 
 .import-zone-active {
-  background: #edf4ff;
-  border-color: #85ace3;
+  background: #eef9ff;
+  border-color: #7bb4da;
 }
 
 .import-zone h2 {
@@ -281,13 +290,13 @@ body {
   width: 100%;
   height: 10px;
   border-radius: 999px;
-  background: #dbe8f6;
+  background: #dceaf7;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(to right, #6ea5ef, #4e89d9);
+  background: linear-gradient(to right, #46bcce, #4f8fd9);
 }
 
 .ocr-error {

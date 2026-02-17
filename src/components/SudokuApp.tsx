@@ -283,7 +283,7 @@ export default function SudokuApp() {
       previewContext.drawImage(canvas, rect.left, rect.top, rect.size, rect.size, 0, 0, rect.size, rect.size);
       setPreviewUrl(preview.toDataURL("image/png"));
 
-      setOcrMessage("Loading OCR engine...");
+      setOcrMessage("Loading recognition engine...");
       const tesseract = await import("tesseract.js");
       const worker = await tesseract.createWorker("eng");
       await worker.setParameters({
@@ -340,9 +340,9 @@ export default function SudokuApp() {
 
       await worker.terminate();
       setRecognizedValues(detected);
-      setOcrMessage("OCR complete. Apply puzzle if it looks right.");
+      setOcrMessage("Recognition complete. Apply puzzle if it looks right.");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "OCR failed";
+      const message = error instanceof Error ? error.message : "Recognition failed";
       setOcrError(message);
       setOcrMessage("");
     } finally {
@@ -460,10 +460,10 @@ export default function SudokuApp() {
             <NextImage src="/logo.png" alt="SudokuPaste logo" width={72} height={72} className="app-logo" />
             <div className="title-text">
               <h1>SudokuPaste</h1>
-              <span className="title-chip">OCR + Play</span>
+              <span className="title-chip">Recognize + Play</span>
             </div>
           </div>
-          <p>Type, note, undo, and import puzzles directly from images.</p>
+          <p>Type, note, undo, and recognize puzzles directly from images.</p>
         </div>
 
         <section className="board-wrap">
@@ -616,7 +616,7 @@ export default function SudokuApp() {
               >
                 <span className="key-content">
                   <Check size={16} aria-hidden />
-                  Use OCR Puzzle
+                  Use recognized puzzle
                 </span>
               </button>
             )}
