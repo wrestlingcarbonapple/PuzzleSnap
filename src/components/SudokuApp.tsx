@@ -456,8 +456,11 @@ export default function SudokuApp() {
       <main className="card">
         <div className="title-block">
           <div className="title-row">
-            <NextImage src="/logo.png" alt="SudokuPaste logo" width={44} height={44} className="app-logo" />
-            <h1>SudokuPaste</h1>
+            <NextImage src="/logo.png" alt="SudokuPaste logo" width={72} height={72} className="app-logo" />
+            <div className="title-text">
+              <h1>SudokuPaste</h1>
+              <span className="title-chip">OCR + Play</span>
+            </div>
           </div>
           <p>Type, note, undo, and import puzzles directly from images.</p>
         </div>

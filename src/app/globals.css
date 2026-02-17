@@ -63,15 +63,37 @@ body {
 .title-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
 }
 
 .app-logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid #d7e1eb;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  border: 1px solid #d1dcea;
   background: #fff;
+  box-shadow: 0 16px 30px #2755921a;
+}
+
+.title-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.title-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #e9f2ff;
+  border: 1px solid #b9d0f2;
+  color: #22456a;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .title-block h1 {
