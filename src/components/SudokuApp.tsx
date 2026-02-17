@@ -243,6 +243,7 @@ export default function SudokuApp() {
 
   const completed = useMemo(() => computeCompletedDigits(values), [values]);
   const conflictMask = useMemo(() => computeConflictMask(values), [values]);
+  const ThemeIcon = themePreference === "light" ? Sun : themePreference === "dark" ? Moon : Monitor;
 
   const selectedValue = selected !== null ? values[selected] : null;
   const blockingMask = useMemo(() => {
@@ -281,6 +282,18 @@ export default function SudokuApp() {
     setHistory([initialSnapshot]);
     setHistoryIndex(0);
     setSelected(0);
+  };
+
+  const cycleTheme = () => {
+    setThemePreference((prev) => {
+      if (prev === "light") {
+        return "dark";
+      }
+      if (prev === "dark") {
+        return "system";
+      }
+      return "light";
+    });
   };
 
   const performOcr = async (file: File) => {
@@ -490,6 +503,14 @@ export default function SudokuApp() {
           <div className="title-row">
             <div className="title-main">
               <NextImage src="/logo.png" alt="SudokuPaste logo" width={72} height={72} className="app-logo" />
+              <button
+                type="button"
+                className="theme-mobile-button"
+                onClick={cycleTheme}
+                aria-label={`Theme: ${themePreference}. Tap to change theme mode.`}
+              >
+                <ThemeIcon size={18} aria-hidden />
+              </button>
               <div className="title-text">
                 <h1>SudokuPaste</h1>
                 <span className="title-chip">Recognize + Play</span>

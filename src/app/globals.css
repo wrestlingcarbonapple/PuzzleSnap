@@ -138,6 +138,19 @@ body {
   color: var(--muted);
 }
 
+.theme-mobile-button {
+  display: none;
+  border: 1px solid var(--subline);
+  background: var(--button);
+  color: var(--button-text);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
 .theme-toggle {
   display: inline-flex;
   align-items: center;
@@ -383,8 +396,28 @@ body {
   }
 
   .title-row {
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .title-main {
+    gap: 10px;
+  }
+
+  .title-text {
+    gap: 2px;
+  }
+
+  .title-block p {
+    display: none;
+  }
+
+  .theme-toggle {
+    display: none;
+  }
+
+  .theme-mobile-button {
+    display: inline-flex;
   }
 
   .import-zone {
