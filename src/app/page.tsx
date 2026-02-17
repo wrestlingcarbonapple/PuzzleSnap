@@ -1,5 +1,5 @@
-import SudokuApp from "@/components/SudokuApp";
+import PuzzleSnapApp from "@/components/PuzzleSnapApp";
 
 export default function Home() {
-  return <SudokuApp />;
+  return <PuzzleSnapApp />;
 }
