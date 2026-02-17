@@ -1,7 +1,7 @@
 "use client";
 
 import NextImage from "next/image";
-import { ArrowLeft, Camera, Crosshair, Eye, EyeOff, ImagePlus, Play, Trash2 } from "lucide-react";
+import { ArrowLeft, Camera, Eye, EyeOff, ImagePlus, Play, Trash2 } from "lucide-react";
 import { ChangeEvent, DragEvent, MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SudokuApp from "@/components/SudokuApp";
 import { createEmptyValues, type BoardValues } from "@/lib/sudoku";
@@ -308,6 +308,16 @@ export default function PuzzleSnapApp() {
           {previewUrl && (
             <div className="preview-wrap detection-preview-wrap">
               <NextImage src={previewUrl} alt="Recognition preview" width={540} height={540} className="preview-image" />
+              {busy && (
+                <div className="detection-progress-overlay" aria-live="polite">
+                  <div className="detection-progress-card">
+                    <p>{message}</p>
+                    <div className="progress-track">
+                      <div className="progress-fill" style={{ width: `${Math.round(progress * 100)}%` }} />
+                    </div>
+                  </div>
+                </div>
+              )}
               {showOverlay && (
                 <div className="detection-grid-overlay" role="grid" aria-label="Recognized grid overlay">
                   {recognizedValues.map((value, index) => {
@@ -372,7 +382,7 @@ export default function PuzzleSnapApp() {
         {originalImageUrl && (
           <section className="setup-type-panel">
             <h2>Optional corner correction</h2>
-            <p>Click any 4 corners on the same image. We auto-order them.</p>
+            <p>Click on the four corners of the puzzle.</p>
             <div className="preview-wrap manual-corner-preview">
               <div ref={imageHitRef} className="manual-corner-image-hit" onClick={onManualImageClick}>
                 <NextImage
@@ -430,9 +440,22 @@ export default function PuzzleSnapApp() {
               ))}
             </div>
 
-            <p>
-              Add four points to rerun automatically. Remove all points to return to automatic detection.
-            </p>
+            <div className="import-actions">
+              <button
+                type="button"
+                className="key"
+                onClick={async () => {
+                  if (!importFile) {
+                    return;
+                  }
+                  setManualCorners([]);
+                  await runRecognition(importFile);
+                }}
+                disabled={busy || manualCorners.length === 0}
+              >
+                Clear corners
+              </button>
+            </div>
           </section>
         )}
 

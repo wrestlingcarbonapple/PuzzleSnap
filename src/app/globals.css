@@ -480,6 +480,32 @@ body {
   position: relative;
 }
 
+.detection-progress-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--board-bg) 42%, transparent);
+  pointer-events: none;
+}
+
+.detection-progress-card {
+  width: min(88%, 320px);
+  border: 1px solid var(--subline);
+  background: var(--card);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 10px 24px #00000024;
+}
+
+.detection-progress-card p {
+  margin: 0 0 8px;
+  color: var(--text);
+  font-weight: 700;
+}
+
 .detection-grid-overlay {
   position: absolute;
   inset: 0;
