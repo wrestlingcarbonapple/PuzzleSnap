@@ -73,6 +73,27 @@ export function computeBlockingMask(values: BoardValues, digit: number): boolean
   return mask;
 }
 
+export function computeConflictMask(values: BoardValues): boolean[] {
+  const mask = Array<boolean>(CELL_COUNT).fill(false);
+
+  for (let index = 0; index < CELL_COUNT; index += 1) {
+    const value = values[index];
+    if (value === null) {
+      continue;
+    }
+
+    const peers = getPeers(index);
+    for (const peer of peers) {
+      if (values[peer] === value) {
+        mask[index] = true;
+        mask[peer] = true;
+      }
+    }
+  }
+
+  return mask;
+}
+
 export function bitForDigit(digit: number): number {
   return 1 << (digit - 1);
 }

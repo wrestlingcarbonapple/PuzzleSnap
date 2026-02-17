@@ -6,6 +6,7 @@ import {
   bitForDigit,
   computeBlockingMask,
   computeCompletedDigits,
+  computeConflictMask,
   createEmptyNotes,
   createEmptyValues,
   getPeers,
@@ -209,6 +210,7 @@ export default function SudokuApp() {
   }, [noteMode, notes, startValues, values]);
 
   const completed = useMemo(() => computeCompletedDigits(values), [values]);
+  const conflictMask = useMemo(() => computeConflictMask(values), [values]);
 
   const selectedValue = selected !== null ? values[selected] : null;
   const blockingMask = useMemo(() => {
@@ -476,6 +478,7 @@ export default function SudokuApp() {
               const sameNumber = selectedValue !== null && value === selectedValue;
               const isGiven = startValues[index] !== null;
               const blocked = selectedValue !== null && blockingMask[index] && value === null;
+              const invalid = conflictMask[index];
 
               const classNames = ["cell"];
               if (isSelected) classNames.push("cell-selected");
@@ -483,6 +486,7 @@ export default function SudokuApp() {
               if (sameNumber) classNames.push("cell-same-number");
               if (isGiven) classNames.push("cell-given");
               if (blocked) classNames.push("cell-blocked");
+              if (invalid) classNames.push("cell-invalid");
               if ((col + 1) % 3 === 0 && col < 8) classNames.push("cell-box-right");
               if ((row + 1) % 3 === 0 && row < 8) classNames.push("cell-box-bottom");
 

@@ -139,6 +139,10 @@ body {
   font-weight: 700;
 }
 
+.cell-invalid .cell-value {
+  color: #c63c3c;
+}
+
 .cell-value {
   display: grid;
   place-items: center;
