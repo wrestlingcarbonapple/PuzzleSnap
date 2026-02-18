@@ -11,6 +11,159 @@ export type RecognizeOptions = {
   manualCorners?: [NormalizedCorner, NormalizedCorner, NormalizedCorner, NormalizedCorner];
 };
 
+type CornerQuad = {
+  topLeft: Point;
+  topRight: Point;
+  bottomLeft: Point;
+  bottomRight: Point;
+};
+
+type OpenCVLike = {
+  Mat: new () => {
+    rows: number;
+    cols: number;
+    data32S: Int32Array;
+    delete: () => void;
+  };
+  MatVector: new () => {
+    size: () => number;
+    get: (index: number) => {
+      rows: number;
+      data32S: Int32Array;
+      delete: () => void;
+    };
+    delete: () => void;
+  };
+  Size: new (width: number, height: number) => unknown;
+  imread: (canvas: HTMLCanvasElement) => {
+    cols: number;
+    rows: number;
+    delete: () => void;
+  };
+  cvtColor: (
+    src: { delete: () => void },
+    dst: { delete: () => void },
+    code: number
+  ) => void;
+  GaussianBlur: (
+    src: { delete: () => void },
+    dst: { delete: () => void },
+    ksize: unknown,
+    sigmaX: number,
+    sigmaY: number,
+    borderType: number
+  ) => void;
+  adaptiveThreshold: (
+    src: { delete: () => void },
+    dst: { delete: () => void },
+    maxValue: number,
+    adaptiveMethod: number,
+    thresholdType: number,
+    blockSize: number,
+    c: number
+  ) => void;
+  findContours: (
+    image: { delete: () => void },
+    contours: { delete: () => void },
+    hierarchy: { delete: () => void },
+    mode: number,
+    method: number
+  ) => void;
+  contourArea: (contour: { delete: () => void }) => number;
+  arcLength: (contour: { delete: () => void }, closed: boolean) => number;
+  approxPolyDP: (
+    curve: { delete: () => void },
+    approxCurve: { rows: number; data32S: Int32Array; delete: () => void },
+    epsilon: number,
+    closed: boolean
+  ) => void;
+  isContourConvex: (contour: { delete: () => void }) => boolean;
+  COLOR_RGBA2GRAY: number;
+  ADAPTIVE_THRESH_GAUSSIAN_C: number;
+  THRESH_BINARY_INV: number;
+  RETR_EXTERNAL: number;
+  CHAIN_APPROX_SIMPLE: number;
+  BORDER_DEFAULT: number;
+};
+
+declare global {
+  interface Window {
+    cv?: OpenCVLike & {
+      onRuntimeInitialized?: () => void;
+    };
+  }
+}
+
+let openCvLoaderPromise: Promise<OpenCVLike | null> | null = null;
+
+function orderCorners(points: Point[]): CornerQuad {
+  const sortedByY = [...points].sort((a, b) => a.y - b.y);
+  const topTwo = sortedByY.slice(0, 2).sort((a, b) => a.x - b.x);
+  const bottomTwo = sortedByY.slice(2, 4).sort((a, b) => a.x - b.x);
+  return {
+    topLeft: topTwo[0],
+    topRight: topTwo[1],
+    bottomRight: bottomTwo[1],
+    bottomLeft: bottomTwo[0]
+  };
+}
+
+async function loadOpenCV(): Promise<OpenCVLike | null> {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  if (window.cv?.Mat) {
+    return window.cv;
+  }
+  if (openCvLoaderPromise) {
+    return openCvLoaderPromise;
+  }
+
+  openCvLoaderPromise = new Promise<OpenCVLike | null>((resolve) => {
+    const resolveWithCurrent = () => {
+      resolve(window.cv?.Mat ? (window.cv as OpenCVLike) : null);
+    };
+
+    const existing = document.getElementById("opencv-js-loader") as HTMLScriptElement | null;
+    if (existing) {
+      const started = Date.now();
+      const timer = window.setInterval(() => {
+        if (window.cv?.Mat) {
+          window.clearInterval(timer);
+          resolveWithCurrent();
+        } else if (Date.now() - started > 10000) {
+          window.clearInterval(timer);
+          resolve(null);
+        }
+      }, 120);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = "opencv-js-loader";
+    script.async = true;
+    script.src = "https://docs.opencv.org/4.x/opencv.js";
+    script.onload = () => {
+      if (window.cv?.Mat) {
+        resolveWithCurrent();
+        return;
+      }
+      if (window.cv) {
+        window.cv.onRuntimeInitialized = () => {
+          resolveWithCurrent();
+        };
+      } else {
+        resolve(null);
+      }
+    };
+    script.onerror = () => resolve(null);
+    document.head.appendChild(script);
+  });
+
+  return openCvLoaderPromise;
+}
+
+
 function pruneConflictingDetections(
   values: BoardValues,
   confidences: number[],
@@ -266,6 +419,96 @@ function findGridCorners(binaryCanvas: HTMLCanvasElement): {
   }
 
   return { topLeft, topRight, bottomLeft, bottomRight };
+}
+
+async function detectCornersWithOpenCV(sourceCanvas: HTMLCanvasElement): Promise<CornerQuad | null> {
+  const cv = await loadOpenCV();
+  if (!cv) {
+    return null;
+  }
+
+  const sampleCanvas = document.createElement("canvas");
+  const maxSize = 700;
+  const scale = Math.min(1, maxSize / Math.max(sourceCanvas.width, sourceCanvas.height));
+  sampleCanvas.width = Math.max(1, Math.floor(sourceCanvas.width * scale));
+  sampleCanvas.height = Math.max(1, Math.floor(sourceCanvas.height * scale));
+  const sampleCtx = sampleCanvas.getContext("2d");
+  if (!sampleCtx) {
+    return null;
+  }
+  sampleCtx.drawImage(sourceCanvas, 0, 0, sampleCanvas.width, sampleCanvas.height);
+
+  const src = cv.imread(sampleCanvas);
+  const gray = new cv.Mat();
+  const blurred = new cv.Mat();
+  const thresh = new cv.Mat();
+  const contours = new cv.MatVector();
+  const hierarchy = new cv.Mat();
+
+  try {
+    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+    cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0, 0, cv.BORDER_DEFAULT);
+    cv.adaptiveThreshold(
+      blurred,
+      thresh,
+      255,
+      cv.ADAPTIVE_THRESH_GAUSSIAN_C,
+      cv.THRESH_BINARY_INV,
+      11,
+      2
+    );
+    cv.findContours(thresh, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+    const minArea = src.cols * src.rows * 0.04;
+    let bestArea = 0;
+    let bestPoints: Point[] | null = null;
+
+    for (let i = 0; i < contours.size(); i += 1) {
+      const contour = contours.get(i);
+      const area = cv.contourArea(contour);
+      if (area < minArea || area < bestArea) {
+        contour.delete();
+        continue;
+      }
+
+      const perimeter = cv.arcLength(contour, true);
+      const approx = new cv.Mat();
+      cv.approxPolyDP(contour, approx, 0.02 * perimeter, true);
+
+      if (approx.rows === 4 && cv.isContourConvex(approx)) {
+        const points: Point[] = [];
+        const data = approx.data32S;
+        for (let j = 0; j < 4; j += 1) {
+          points.push({ x: data[j * 2], y: data[j * 2 + 1] });
+        }
+        bestArea = area;
+        bestPoints = points;
+      }
+
+      approx.delete();
+      contour.delete();
+    }
+
+    if (!bestPoints) {
+      return null;
+    }
+    const ordered = orderCorners(bestPoints);
+    return {
+      topLeft: { x: ordered.topLeft.x / scale, y: ordered.topLeft.y / scale },
+      topRight: { x: ordered.topRight.x / scale, y: ordered.topRight.y / scale },
+      bottomLeft: { x: ordered.bottomLeft.x / scale, y: ordered.bottomLeft.y / scale },
+      bottomRight: { x: ordered.bottomRight.x / scale, y: ordered.bottomRight.y / scale }
+    };
+  } catch {
+    return null;
+  } finally {
+    src.delete();
+    gray.delete();
+    blurred.delete();
+    thresh.delete();
+    contours.delete();
+    hierarchy.delete();
+  }
 }
 
 function solveLinearSystem8(matrix: number[][], vector: number[]): number[] | null {
@@ -671,7 +914,7 @@ export async function recognizeSudokuFromImageFile(
 
   progress(onProgress, { progress: 0.02, stage: "Detecting puzzle frame..." });
   const detectionBinary = createDetectionBinary(sourceCanvas);
-  const corners = options?.manualCorners
+  let corners: CornerQuad | null = options?.manualCorners
     ? {
         topLeft: {
           x: options.manualCorners[0].x * sourceCanvas.width,
@@ -691,6 +934,11 @@ export async function recognizeSudokuFromImageFile(
         }
       }
     : findGridCorners(detectionBinary);
+
+  if (!corners) {
+    progress(onProgress, { progress: 0.04, stage: "Detecting corners with OpenCV..." });
+    corners = await detectCornersWithOpenCV(sourceCanvas);
+  }
 
   let correctedSource = sourceCanvas;
   let correctedBinary = detectionBinary;
@@ -784,7 +1032,7 @@ export async function recognizeSudokuFromImageFile(
 
     const primaryResult = await worker.recognize(scratch);
     const primaryMatch = primaryResult.data.text.match(/[1-9]/);
-    if (primaryMatch) {
+    if (primaryMatch && primaryResult.data.confidence > bestConfidence) {
       bestDigit = Number.parseInt(primaryMatch[0], 10);
       bestConfidence = primaryResult.data.confidence;
     }
